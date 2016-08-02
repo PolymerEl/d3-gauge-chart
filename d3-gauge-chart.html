@@ -1,0 +1,319 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../d3-bundle/d3-bundle-element.html">
+<link rel="import" href="../d3-bundle/d3-shape-element.html">
+<!-- <link rel="import" href="../d3-bundle/d3-pie-element.html"> -->
+<link rel="import" href="tag-behavior.html">
+<!--
+An element providing a solution to no problem in particular.
+
+Example:
+
+    <seed-element></seed-element>
+
+@demo
+-->
+<dom-module id="d3-gauge-chart">
+  <style>
+  :host {
+    display: block;
+  }
+  
+  ::content .needle,
+  ::content .needle-center {
+    fill: var(--chart-needle, #464A4F);
+  }
+  </style>
+  <template>
+    <svg id="svg" xmlns:xlink="http://www.w3.org/1999/xlink" height="100%" width="100%" min-height="100%">
+    </svg>
+  </template>
+</dom-module>
+<script>
+(function() {
+  'user-strict';
+
+  var percToDeg = function(perc) {
+    return perc * 360;
+  };
+
+  var degToRad = function(deg) {
+    return deg * Math.PI / 180;
+  };
+
+  var percToRad = function(perc) {
+    return degToRad(percToDeg(perc));
+  };
+
+  var Needle = (function() {
+
+    /** 
+     * Helper function that returns the `d` value
+     * for moving the needle
+     **/
+    var recalcPointerPos = function(perc) {
+      var centerX, centerY, leftX, leftY, rightX, rightY, thetaRad, topX, topY;
+      thetaRad = percToRad(perc / 2);
+      centerX = 0;
+      centerY = 0;
+      topX = centerX - this.len * Math.cos(thetaRad);
+      topY = centerY - this.len * Math.sin(thetaRad);
+      leftX = centerX - this.radius * Math.cos(thetaRad - Math.PI / 2);
+      leftY = centerY - this.radius * Math.sin(thetaRad - Math.PI / 2);
+      rightX = centerX - this.radius * Math.cos(thetaRad + Math.PI / 2);
+      rightY = centerY - this.radius * Math.sin(thetaRad + Math.PI / 2);
+      return 'M ' + leftX + ' ' + leftY + ' L ' + topX + ' ' + topY + ' L ' + rightX + ' ' + rightY;
+    };
+
+    var gauge;
+
+    function Needle(el, thisGauge, width) {
+      this.el = el;
+      this.len = width / 2.3;
+      this.radius = this.len / 6;
+
+      gauge = thisGauge;
+    }
+
+    Needle.prototype.render = function() {
+      this.el.append('circle').attr('class', 'needle-center').attr('cx', 0).attr('cy', 0).attr('r', this.radius);
+      return this.el.append('path').attr('class', 'needle').attr('d', recalcPointerPos.call(this, 0));
+    };
+
+    Needle.prototype.moveTo = function(perc) {
+      var self = this;
+
+      this.perc = perc;
+
+
+      // Reset pointer position
+      // this.el.transition().delay(100).ease('quad').duration(200).select('.needle').tween('reset-progress', function() {
+      //   return function(percentOfPercent) {
+      //     var progress = (1 - percentOfPercent) * oldValue;
+
+      //     gauge.repaint(progress);
+      //     return d3.select(this).attr('d', recalcPointerPos.call(self, progress));
+      //   };
+      // });
+
+      this.el.transition().ease(d3.easeBounce).duration(1000).select('.needle').tween('progress', function() {
+        var sel = d3.select(this)
+        return function(percentOfPercent) {
+          var progress = percentOfPercent * perc;
+
+          // gauge.repaint(progress);
+          return sel.attr('d', recalcPointerPos.call(self, progress));
+        };
+      });
+
+    };
+
+    return Needle;
+
+  })();
+
+  var gaugeChart = {
+    defaultConfig: {
+      w: 200,
+      h: 200,
+      paintBackground: true,
+      paintValue: false,
+      backgroundColors: d3.scaleOrdinal().range(['red', 'orange', 'green']),
+      colors: d3.scaleOrdinal().range(['blue', 'grey']),
+      background: [0.4, 0.4, 0.2],
+      chartInset: 10,
+      backgroundChartInset: 2,
+      padRad: 0.02
+    },
+    chart: function() {
+      // default config
+      var cfg = Object.create(gaugeChart.defaultConfig);
+
+      var arcBackground, arcValue, backgroundCt, valueCt, background, backgroundColors, colors, width, height, radius, chartInset, barWidth, padRad, backgroundChartInset;
+      var value = 0.5;
+
+
+      var pie = d3.pie()
+        .sort(null)
+        .endAngle(Math.PI / 2)
+        .startAngle(-Math.PI / 2)
+        .value(function(d) {
+          return d;
+        });
+
+      /*
+      Utility methods 
+      */
+
+      function gauge(selection) {
+
+        radius = Math.min(cfg.w, cfg.h) / 2;
+        chartInset = cfg.chartInset;
+        backgroundChartInset = cfg.backgroundChartInset;
+        padRad = cfg.padRad;
+        width = cfg.w;
+        paintBackground = cfg.paintBackground;
+        paintValue = cfg.paintValue;
+        height = cfg.h;
+        background = cfg.background;
+        backgroundColors = cfg.backgroundColors;
+        colors = cfg.colors;
+        // barWidth = cfg.barWidth;
+        barWidth = 40 * width / 300;
+
+        selection = selection.append('g')
+          .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')');
+
+        gauge.selection = selection;
+
+        backgroundCt = selection.append('g').attr('class', 'chart-background-ct');
+        valueCt = selection.append('g').attr('class', 'chart-value-ct');
+
+        arcBackground = d3.arc()
+          .outerRadius(radius - (chartInset - backgroundChartInset))
+          .innerRadius(radius - (chartInset + backgroundChartInset) - barWidth );
+
+        arcValue = d3.arc()
+          .outerRadius(radius - chartInset)
+          .innerRadius(radius - chartInset - barWidth);
+
+        selection.call(gauge.drawNeedle);
+        selection.call(gauge.repaint);
+      }
+
+      gauge.drawNeedle = function(el) {
+        if (!gauge.needle) {
+          gauge.needle = new Needle(el, gauge, width);
+          gauge.needle.render();
+
+        }
+        gauge.needle.moveTo(gauge.value());
+      };
+
+      function drawBackground() {
+        var g = backgroundCt.selectAll('.chart-background')
+          .data(pie(background))
+          .enter().append('g')
+          .attr('class', 'chart-background');
+
+        g.append('path')
+          .attr('d', arcBackground)
+          .style('fill', function(d, i) {
+            return backgroundColors(i);
+          });
+      };
+
+      function drawValue(value) {
+        var g = valueCt.selectAll('.chart-background')
+          .data(pie.padAngle(padRad)([value, 1 - value]))
+          .enter().append('g')
+          .attr('class', 'chart-background');
+
+        g.append('path')
+          .attr('d', arcValue)
+          .style('fill', function(d, i) {
+            return colors(i);
+          });
+      };
+
+      gauge.repaint = function() {
+        if(paintBackground) {drawBackground()};
+        if(paintValue) {drawValue(gauge.value())};
+      };
+
+      gauge.moveTo = function(value) {
+        gauge.value(value);
+        gauge.repaint();
+        gauge.needle.moveTo(value);
+        return gauge;
+      };
+
+      gauge.value = function() {
+        if (!arguments.length) {
+          return value;
+        }
+        value = arguments[0];
+        return gauge;
+      };
+
+      gauge.config = function(value) {
+        if (!arguments.length) {
+          return cfg;
+        }
+        if (arguments.length > 1) {
+          cfg[arguments[0]] = arguments[1];
+        } else {
+          d3.entries(value || {}).forEach(function(option) {
+            cfg[option.key] = option.value;
+          });
+        }
+        return gauge;
+      };
+
+      return gauge;
+    }
+
+  };
+
+  Polymer({
+
+    is: 'd3-gauge-chart',
+
+    properties: {
+
+      value: {
+        type: Number,
+        value: 30
+      },
+
+      options: {
+        type: Object,
+        notify: true,
+        value: {
+          w: 200,
+          h: 200,
+          chartInset: 10,
+          backgroundChartInset: 2,
+          padRad: 0.02,
+          background: [0.4, 0.4, 0.2],
+          backgroundColors: d3.scaleOrdinal().range(['red', 'orange', 'green']),
+          colors: d3.scaleOrdinal().range(['blue', 'grey']),
+        }
+      }
+    },
+
+    observers: [
+      'draw(value, options)'
+    ],
+
+    behaviors: [
+      MyBehaviors.svg.Tag
+    ],
+
+    draw: function(value, options) {
+      var chart = gaugeChart.chart()
+        .config(options).value(value / 100);
+
+      var cfg = chart.config();
+
+      this.set('_viewBox', '0 0 ' + cfg.w + ' ' + cfg.h * 0.7);
+
+      var d3Svg = d3.select(this.$.svg);
+      d3Svg.selectAll('*').remove();
+      d3Svg
+        .call(chart);
+    }
+
+
+
+  });
+})();
+</script>
