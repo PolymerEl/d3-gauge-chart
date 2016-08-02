@@ -100,12 +100,12 @@ Example:
       //     var progress = (1 - percentOfPercent) * oldValue;
 
       //     gauge.repaint(progress);
-      //     return d3.select(this).attr('d', recalcPointerPos.call(self, progress));
+      //     return d4.select(this).attr('d', recalcPointerPos.call(self, progress));
       //   };
       // });
 
-      this.el.transition().ease(d3.easeBounce).duration(1000).select('.needle').tween('progress', function() {
-        var sel = d3.select(this)
+      this.el.transition().ease(d4.easeBounce).duration(1000).select('.needle').tween('progress', function() {
+        var sel = d4.select(this)
         return function(percentOfPercent) {
           var progress = percentOfPercent * perc;
 
@@ -126,8 +126,8 @@ Example:
       h: 200,
       paintBackground: true,
       paintValue: false,
-      backgroundColors: d3.scaleOrdinal().range(['red', 'orange', 'green']),
-      colors: d3.scaleOrdinal().range(['blue', 'grey']),
+      backgroundColors: d4.scaleOrdinal().range(['red', 'orange', 'green']),
+      colors: d4.scaleOrdinal().range(['blue', 'grey']),
       background: [0.4, 0.4, 0.2],
       chartInset: 10,
       backgroundChartInset: 2,
@@ -141,7 +141,7 @@ Example:
       var value = 0.5;
 
 
-      var pie = d3.pie()
+      var pie = d4.pie()
         .sort(null)
         .endAngle(Math.PI / 2)
         .startAngle(-Math.PI / 2)
@@ -177,11 +177,11 @@ Example:
         backgroundCt = selection.append('g').attr('class', 'chart-background-ct');
         valueCt = selection.append('g').attr('class', 'chart-value-ct');
 
-        arcBackground = d3.arc()
+        arcBackground = d4.arc()
           .outerRadius(radius - (chartInset - backgroundChartInset))
           .innerRadius(radius - (chartInset + backgroundChartInset) - barWidth );
 
-        arcValue = d3.arc()
+        arcValue = d4.arc()
           .outerRadius(radius - chartInset)
           .innerRadius(radius - chartInset - barWidth);
 
@@ -251,7 +251,7 @@ Example:
         if (arguments.length > 1) {
           cfg[arguments[0]] = arguments[1];
         } else {
-          d3.entries(value || {}).forEach(function(option) {
+          d4.entries(value || {}).forEach(function(option) {
             cfg[option.key] = option.value;
           });
         }
@@ -284,8 +284,8 @@ Example:
           backgroundChartInset: 2,
           padRad: 0.02,
           background: [0.4, 0.4, 0.2],
-          backgroundColors: d3.scaleOrdinal().range(['red', 'orange', 'green']),
-          colors: d3.scaleOrdinal().range(['blue', 'grey']),
+          backgroundColors: d4.scaleOrdinal().range(['red', 'orange', 'green']),
+          colors: d4.scaleOrdinal().range(['blue', 'grey']),
         }
       }
     },
@@ -306,7 +306,7 @@ Example:
 
       this.set('_viewBox', '0 0 ' + cfg.w + ' ' + cfg.h * 0.7);
 
-      var d3Svg = d3.select(this.$.svg);
+      var d3Svg = d4.select(this.$.svg);
       d3Svg.selectAll('*').remove();
       d3Svg
         .call(chart);
