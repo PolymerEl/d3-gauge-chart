@@ -9,7 +9,14 @@
     "web-component",
     "web-components",
     "polymer",
-    "seed"
+    "d3.js",
+    "gauge",
+    "chart",
+    "charts",
+    "polymer",
+    "analytics",
+    "mapping",
+    "dataviz"
   ],
   "main": "d3-gauge-chart.html",
   "license": "http://polymer.github.io/LICENSE.txt",
@@ -20,11 +27,13 @@
     "/demo/"
   ],
   "dependencies": {
-    "polymer": "Polymer/polymer#^1.0.0",
-    "d3-element":"PolymerEl/d3-element"
+    "polymer": "Polymer/polymer#^1.4.0",
+    "d3-bundle-element":"PolymerEl/d3-bundle-element"
   },
-  "devDependencies": {
+ "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
-    "web-component-tester": "*"
+    "iron-demo-helpers": "PolymerElements/iron-demo-helpers#^1.0.0",
+    "web-component-tester": "^4.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
   }
 }

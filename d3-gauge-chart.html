@@ -10,15 +10,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../polymer/polymer.html">
 <!-- <link rel="import" href="../d3-bundle-element/d3-bundle-element.html"> -->
 <link rel="import" href="../d3-bundle-element/d3-element-multi.html">
+<link rel="import" href="../d3-bundle-element/svg-focusable-behavior.html">
+<link rel="import" href="../d3-bundle-element/svg-viewbox-behavior.html">
 
-<!-- <link rel="import" href="../d3-bundle/d3-pie-element.html"> -->
-<link rel="import" href="tag-behavior.html">
 <!--
-An element providing a solution to no problem in particular.
+An element displaying a gauge chart
 
 Example:
 
-    <seed-element></seed-element>
+    <d3-gauge-chart></d3-gauge-chart>
 
 @demo
 -->
@@ -270,23 +270,31 @@ Example:
 
     properties: {
 
+      /* 
+       * `value` value of the needle
+       */
       value: {
         type: Number,
         value: 30
       },
 
+      /* 
+       * `options`  options for the chart
+       */
       options: {
         type: Object,
         notify: true,
-        value: {
-          w: 200,
-          h: 200,
-          chartInset: 10,
-          backgroundChartInset: 2,
-          padRad: 0.02,
-          background: [0.4, 0.4, 0.2],
-          backgroundColors: d3.scaleOrdinal().range(['red', 'orange', 'green']),
-          colors: d3.scaleOrdinal().range(['blue', 'grey']),
+        value: function() {
+          return {
+            w: 200,
+            h: 200,
+            chartInset: 10,
+            backgroundChartInset: 2,
+            padRad: 0.02,
+            background: [0.4, 0.4, 0.2],
+            backgroundColors: d3.scaleOrdinal().range(['red', 'orange', 'green']),
+            colors: d3.scaleOrdinal().range(['blue', 'grey'])
+          }
         }
       }
     },
@@ -296,7 +304,8 @@ Example:
     ],
 
     behaviors: [
-      MyBehaviors.svg.Tag
+      Polymer.behaviors.svgViewBox,
+      Polymer.behaviors.svgFocusable
     ],
 
     draw: function(value, options) {

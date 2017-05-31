@@ -15,16 +15,28 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
   <title>seed-element Demo</title>
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+   <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
+  <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
+  
   <link rel="import" href="../d3-gauge-chart.html">
+    <style is="custom-style" include="demo-pages-shared-styles">
+    .centered {
+      max-width: 600px;
+    }
+  </style>
 </head>
 
 <body>
-  <p>An example of <code>&lt;gauge-chart&gt;</code>:</p>
-  <button>Say Something</button>
-  <d3-gauge-chart value="30"></d3-gauge-chart>
+ <div class="vertical-section-container centered">
+    <h3>An example of <code>&lt;d3-gauge-chart&gt;</code></h3>
+    <demo-snippet>
+      <template>
+       <d3-gauge-chart value="67"></d3-gauge-chart>
+      </template>
+    </demo-snippet>
+  </div>
   <script>
   var gauge = document.querySelector('d3-gauge-chart');
-
 
   </script>
 </body>
