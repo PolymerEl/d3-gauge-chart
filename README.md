@@ -15,5 +15,5 @@ Simple element to display a gauge-chart
 ```
 -->
 ```html
-<my-element value="70"></my-element>
+<d3-gauge-chart value="70"></d3-gauge-chart>
 ```
